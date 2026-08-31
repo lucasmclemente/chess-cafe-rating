@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chess Café — Rating do Clube</title>
+<style>
+  :root {
+    --fundo: #f6f5f2;
+    --painel: #ffffff;
+    --borda: #e2ded6;
+    --texto: #1c1a17;
+    --suave: #6f6a61;
+    --destaque: #7a5c2e;
+    --sobe: #2f7a4a;
+    --desce: #a8402f;
+    --linha: #7a5c2e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fundo: #171614;
+      --painel: #201e1b;
+      --borda: #322e29;
+      --texto: #eeebe5;
+      --suave: #9b948a;
+      --destaque: #d3a86a;
+      --sobe: #6bbd8b;
+      --desce: #e08670;
+      --linha: #d3a86a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px 16px 64px;
+    background: var(--fundo); color: var(--texto);
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .env { max-width: 1000px; margin: 0 auto; }
+  header { margin-bottom: 28px; }
+  h1 { font-size: 1.7rem; margin: 0 0 4px; letter-spacing: -0.02em; }
+  h1 .peca { color: var(--destaque); }
+  .sub { color: var(--suave); font-size: 0.86rem; }
+  .numeros { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 26px; }
+  .num {
+    background: var(--painel); border: 1px solid var(--borda); border-radius: 10px;
+    padding: 12px 18px; flex: 1; min-width: 120px;
+  }
+  .num b { display: block; font-size: 1.5rem; font-variant-numeric: tabular-nums; }
+  .num span { color: var(--suave); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .colunas { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.15fr); gap: 20px; align-items: start; }
+  @media (max-width: 780px) { .colunas { grid-template-columns: 1fr; } }
+  .painel { background: var(--painel); border: 1px solid var(--borda); border-radius: 12px; overflow: hidden; }
+  .painel h2 {
+    font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--suave);
+    margin: 0; padding: 14px 16px; border-bottom: 1px solid var(--borda);
+  }
+  #busca {
+    width: 100%; border: 0; border-bottom: 1px solid var(--borda); padding: 11px 16px;
+    background: transparent; color: var(--texto); font: inherit; font-size: 0.9rem;
+  }
+  #busca:focus { outline: 0; border-bottom-color: var(--destaque); }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  tbody tr { cursor: pointer; border-bottom: 1px solid var(--borda); }
+  tbody tr:last-child { border-bottom: 0; }
+  tbody tr:hover { background: color-mix(in srgb, var(--destaque) 9%, transparent); }
+  tbody tr.ativo { background: color-mix(in srgb, var(--destaque) 15%, transparent); }
+  td { padding: 10px 14px; }
+  td.pos { color: var(--suave); width: 44px; font-size: 0.85rem; }
+  td.nome { font-weight: 500; }
+  td.rating { text-align: right; font-weight: 600; }
+  td.var { text-align: right; width: 62px; font-size: 0.85rem; }
+  .sobe { color: var(--sobe); } .desce { color: var(--desce); } .igual { color: var(--suave); }
+  .corpo { padding: 16px; }
+  .nomeSel { font-size: 1.25rem; font-weight: 600; margin: 0 0 2px; }
+  .resumoSel { color: var(--suave); font-size: 0.86rem; margin-bottom: 16px; }
+  svg { width: 100%; height: auto; display: block; }
+  .grade { stroke: var(--borda); stroke-width: 1; }
+  .eixo { fill: var(--suave); font-size: 11px; }
+  .curva { fill: none; stroke: var(--linha); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+  .ponto { fill: var(--linha); }
+  .area { fill: var(--linha); opacity: 0.09; }
+  ul.partidas { list-style: none; margin: 18px 0 0; padding: 0; font-size: 0.88rem; }
+  ul.partidas li { display: flex; gap: 8px; align-items: baseline; padding: 7px 0; border-top: 1px solid var(--borda); }
+  ul.partidas .res { width: 18px; font-weight: 700; }
+  ul.partidas .adv { flex: 1; }
+  ul.partidas .d { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .vazio { padding: 40px 16px; text-align: center; color: var(--suave); }
+  footer { margin-top: 28px; color: var(--suave); font-size: 0.78rem; text-align: center; }
+</style>
+</head>
+<body>
+<div class="env">
+  <header>
+    <h1><span class="peca">&#9822;</span> Chess Café — Rating do Clube</h1>
+    <div class="sub" id="atualizado"></div>
+  </header>
+
+  <div class="numeros" id="numeros"></div>
+
+  <div class="colunas">
+    <div class="painel">
+      <h2>Classificação</h2>
+      <input id="busca" type="search" placeholder="Buscar aluno…" autocomplete="off">
+      <div id="tabela"></div>
+    </div>
+    <div class="painel">
+      <h2>Evolução</h2>
+      <div class="corpo" id="detalhe"></div>
+    </div>
+  </div>
+
+  <footer>Rating Elo, K=40 · gerado a partir da planilha do clube</footer>
+</div>
+
+<script>
+const DADOS = {"gerado_em": "31/08/2026 as 09:36", "total_jogadores": 0, "total_partidas": 0, "rating_medio": 0, "jogadores": []};
+
+const fmtVar = v => (v > 0 ? "+" : "") + v;
+const classeVar = v => (v > 0 ? "sobe" : v < 0 ? "desce" : "igual");
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+document.getElementById("atualizado").textContent = "Atualizado em " + DADOS.gerado_em;
+
+document.getElementById("numeros").innerHTML = [
+  ["Alunos", DADOS.total_jogadores],
+  ["Partidas", DADOS.total_partidas],
+  ["Rating médio", DADOS.rating_medio || "—"],
+].map(([r, v]) => `<div class="num"><b>${v}</b><span>${r}</span></div>`).join("");
+
+let selecionado = null;
+
+function desenharTabela(filtro = "") {
+  const termo = filtro.trim().toLowerCase();
+  const lista = DADOS.jogadores.filter(j => j.nome.toLowerCase().includes(termo));
+  const alvo = document.getElementById("tabela");
+
+  if (!lista.length) {
+    alvo.innerHTML = '<div class="vazio">Nenhum aluno encontrado.</div>';
+    return;
+  }
+  alvo.innerHTML = "<table><tbody>" + lista.map(j => `
+    <tr data-nome="${esc(j.nome)}" class="${j.nome === selecionado ? "ativo" : ""}">
+      <td class="pos">${j.partidas ? j.posicao + "º" : "—"}</td>
+      <td class="nome">${esc(j.nome)}</td>
+      <td class="rating">${j.rating}</td>
+      <td class="var ${classeVar(j.variacao)}">${j.partidas ? fmtVar(j.variacao) : ""}</td>
+    </tr>`).join("") + "</tbody></table>";
+
+  alvo.querySelectorAll("tr").forEach(tr =>
+    tr.addEventListener("click", () => selecionar(tr.dataset.nome)));
+}
+
+function grafico(hist, inicial) {
+  const pontos = [{ rating: inicial }, ...hist];
+  const L = 46, R = 14, T = 16, B = 26, W = 620, H = 260;
+  const valores = pontos.map(p => p.rating);
+  let min = Math.min(...valores), max = Math.max(...valores);
+  if (max - min < 40) { const meio = (max + min) / 2; min = meio - 20; max = meio + 20; }
+  const folga = (max - min) * 0.12;
+  min -= folga; max += folga;
+
+  const x = i => L + (pontos.length === 1 ? (W - L - R) / 2 : i * (W - L - R) / (pontos.length - 1));
+  const y = v => T + (max - v) * (H - T - B) / (max - min);
+
+  const linhas = [], marcas = 4;
+  for (let k = 0; k <= marcas; k++) {
+    const v = min + (max - min) * k / marcas, py = y(v);
+    linhas.push(`<line class="grade" x1="${L}" y1="${py.toFixed(1)}" x2="${W - R}" y2="${py.toFixed(1)}"/><text class="eixo" x="${L - 8}" y="${(py + 4).toFixed(1)}" text-anchor="end">${Math.round(v)}</text>`);
+  }
+
+  const d = pontos.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.rating).toFixed(1)}`).join(" ");
+  const area = `${d} L${x(pontos.length - 1).toFixed(1)},${H - B} L${x(0).toFixed(1)},${H - B} Z`;
+
+  const bolinhas = pontos.map((p, i) => {
+    const rot = i === 0 ? "início" : `#${p.n} vs ${p.adversario} (${fmtVar(p.delta)})`;
+    return `<circle class="ponto" cx="${x(i).toFixed(1)}" cy="${y(p.rating).toFixed(1)}" r="${pontos.length > 40 ? 2 : 3.5}"><title>${esc(rot)} → ${p.rating}</title></circle>`;
+  }).join("");
+
+  const rotuloX = pontos.length > 1
+    ? `<text class="eixo" x="${L}" y="${H - 6}">início</text><text class="eixo" x="${W - R}" y="${H - 6}" text-anchor="end">partida ${hist.length}</text>`
+    : "";
+
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Evolução do rating">${linhas.join("")}<path class="area" d="${area}"/><path class="curva" d="${d}"/>${bolinhas}${rotuloX}</svg>`;
+}
+
+function selecionar(nome) {
+  selecionado = nome;
+  const j = DADOS.jogadores.find(p => p.nome === nome);
+  const alvo = document.getElementById("detalhe");
+  desenharTabela(document.getElementById("busca").value);
+  if (!j) return;
+
+  if (!j.partidas) {
+    alvo.innerHTML = `<p class="nomeSel">${esc(j.nome)}</p><p class="resumoSel">Rating inicial ${j.inicial} · ainda sem partidas registradas.</p>`;
+    return;
+  }
+
+  const ultimas = j.historico.slice().reverse().slice(0, 12).map(p => {
+    const simbolo = p.pontos === 1 ? "V" : p.pontos === 0 ? "D" : "E";
+    return `<li><span class="res ${p.pontos === 1 ? "sobe" : p.pontos === 0 ? "desce" : "igual"}">${simbolo}</span><span class="adv">${esc(p.adversario)}${p.data ? ` <span class="igual">· ${esc(p.data)}</span>` : ""}</span><span class="d ${classeVar(p.delta)}">${fmtVar(p.delta)}</span><span class="igual">${p.rating}</span></li>`;
+  }).join("");
+
+  alvo.innerHTML = `<p class="nomeSel">${esc(j.nome)}</p>
+    <p class="resumoSel">${j.posicao}º lugar · <b>${j.rating}</b> pontos · <span class="${classeVar(j.variacao)}">${fmtVar(j.variacao)}</span> desde o início · ${j.partidas} partida${j.partidas > 1 ? "s" : ""} (${j.v}V ${j.e}E ${j.d}D)</p>
+    ${grafico(j.historico, j.inicial)}
+    <ul class="partidas">${ultimas}</ul>`;
+}
+
+document.getElementById("busca").addEventListener("input", e => desenharTabela(e.target.value));
+
+if (!DADOS.jogadores.length) {
+  document.getElementById("tabela").innerHTML = '<div class="vazio">Nenhum aluno cadastrado na planilha ainda.</div>';
+  document.getElementById("detalhe").innerHTML = '<div class="vazio">Cadastre alunos na aba RATING e lance partidas na aba PARTIDAS.</div>';
+} else {
+  desenharTabela();
+  selecionar((DADOS.jogadores.find(j => j.partidas) || DADOS.jogadores[0]).nome);
+}
+</script>
+</body>
+</html>
