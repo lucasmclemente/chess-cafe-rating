@@ -4,6 +4,7 @@
 Uso:
     python gerar.py                       # usa o caminho salvo em config.txt
     python gerar.py "C:/caminho/planilha.xlsx"
+    python gerar.py exemplo.xlsx --saida previa.html
 
 Saida: docs/index.html - um arquivo unico, sem dependencias externas.
 """
@@ -19,9 +20,22 @@ CONFIG = RAIZ / "config.txt"
 SAIDA = RAIZ / "docs" / "index.html"
 
 
-def caminho_planilha():
-    if len(sys.argv) > 1:
-        return Path(sys.argv[1])
+def argumentos():
+    """Devolve (planilha, saida). Aceita:  gerar.py [planilha] [--saida caminho.html]"""
+    args = sys.argv[1:]
+    saida = SAIDA
+    if "--saida" in args:
+        i = args.index("--saida")
+        if i + 1 >= len(args):
+            raise SystemExit("--saida precisa vir seguido de um caminho de arquivo.")
+        saida = Path(args[i + 1])
+        del args[i:i + 2]
+    return caminho_planilha(args), saida
+
+
+def caminho_planilha(args):
+    if args:
+        return Path(args[0])
     if CONFIG.exists():
         linha = CONFIG.read_text(encoding="utf-8").strip()
         if linha:
@@ -34,7 +48,7 @@ def caminho_planilha():
 
 
 def main():
-    planilha = caminho_planilha()
+    planilha, saida = argumentos()
     if not planilha.exists():
         raise SystemExit(f"Planilha nao encontrada: {planilha}")
 
@@ -57,11 +71,11 @@ def main():
     json_seguro = json.dumps(dados, ensure_ascii=False).replace("</", "<\\/")
     html = modelo.replace("__DADOS__", json_seguro)
 
-    SAIDA.parent.mkdir(parents=True, exist_ok=True)
-    SAIDA.write_text(html, encoding="utf-8")
+    saida.parent.mkdir(parents=True, exist_ok=True)
+    saida.write_text(html, encoding="utf-8")
 
     print(f"\n  {len(jogadores)} jogadores | {len(partidas)} partidas")
-    print(f"  gerado: {SAIDA}")
+    print(f"  gerado: {saida}")
     if not partidas:
         print("\n  A planilha ainda nao tem partidas - o dashboard saiu vazio.")
 
