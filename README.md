@@ -15,7 +15,7 @@ planilha.xlsx  →  python gerar.py  →  docs/index.html  →  GitHub Pages
 cd C:\Users\lucas\projetos\rating-xadrez && python gerar.py
 ```
 
-3. Publique (depois que o GitHub estiver configurado — veja abaixo):
+3. Publique:
 
 ```bash
 cd C:\Users\lucas\projetos\rating-xadrez && git add -A && git commit -m "Atualiza rating" && git push
@@ -59,25 +59,10 @@ A planilha hoje não registra **quando** cada partida foi jogada, então a evolu
 
 Se quiser datas no gráfico, adicione uma coluna com o cabeçalho **`Data`** na aba PARTIDAS. O `gerar.py` reconhece a coluna pelo nome e passa a exibi-la — não precisa mexer no código. As outras colunas podem ficar onde estão.
 
-## Publicar no GitHub Pages
+## Onde o site está publicado
 
-Só precisa ser feito uma vez.
+- Link dos alunos: **https://lucasmclemente.github.io/chess-cafe-rating/**
+- Repositório: https://github.com/lucasmclemente/chess-cafe-rating (público)
+- O Pages serve a pasta `/docs` da branch `main`. Cada `git push` republica o site em cerca de um minuto.
 
-1. Crie uma conta em [github.com](https://github.com) (se ainda não tiver) e um repositório novo — pode se chamar `chess-cafe-rating`. Deixe-o **público**.
-2. Na pasta do projeto:
-
-```bash
-cd C:\Users\lucas\projetos\rating-xadrez && git init -b main && git add -A && git commit -m "Dashboard de rating do Chess Cafe"
-```
-
-3. Conecte ao repositório que você criou (troque `SEU-USUARIO`):
-
-```bash
-git remote add origin https://github.com/SEU-USUARIO/chess-cafe-rating.git && git push -u origin main
-```
-
-4. No GitHub, vá em **Settings → Pages**, e em "Source" escolha **Deploy from a branch**, branch `main`, pasta **`/docs`**. Salve.
-
-O link ficará `https://SEU-USUARIO.github.io/chess-cafe-rating/` — é esse que você manda para os alunos.
-
-> A planilha **não** vai para o GitHub (está no `.gitignore`). Só o site gerado é publicado.
+A planilha e o `config.txt` estão no `.gitignore` — não vão para o GitHub. Só o site gerado é publicado.
